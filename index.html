@@ -1,1 +1,1281 @@
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d24">
+  <title>PIXEL PLAY — Играй в своё удовольствие</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            night: '#080d24',
+            panel: '#101a38',
+            pixel: '#7c8cff',
+            mint: '#8cf5d2'
+          },
+          fontFamily: {
+            pixel: ['"Press Start 2P"', 'monospace'],
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080d24;
+      --panel: #101a38;
+      --line: #26365f;
+      --accent: #8c9aff;
+      --mint: #8cf5d2;
+      --text: #f2f5ff;
+      --muted: #9ba9cc;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: Inter, sans-serif;
+      overflow-x: hidden;
+      background-image:
+        linear-gradient(rgba(124,140,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,140,255,.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 4px;
+    }
+
+    .pixel-font {
+      font-family: "Press Start 2P", monospace;
+      line-height: 1.7;
+    }
+
+    .pixel-border {
+      border: 2px solid var(--line);
+      box-shadow: 5px 5px 0 #050919;
+    }
+
+    .pixel-button {
+      border: 2px solid #a7b0ff;
+      background: #7c8cff;
+      color: #080d24;
+      box-shadow: 4px 4px 0 #394b9b;
+      transition: transform .15s, box-shadow .15s, filter .15s;
+    }
+
+    .pixel-button:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #394b9b;
+      filter: brightness(1.08);
+    }
+
+    .pixel-button:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .game-card {
+      position: relative;
+      overflow: hidden;
+      background: rgba(16,26,56,.92);
+      border: 2px solid #26365f;
+      box-shadow: 5px 5px 0 #050919;
+      transition: transform .2s, border-color .2s, background .2s;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+      border-color: #7c8cff;
+    }
+
+    .game-card.selected {
+      border-color: var(--mint);
+      background: #142747;
+      box-shadow: 5px 5px 0 #345c66;
+    }
+
+    .game-art {
+      display: grid;
+      place-items: center;
+      min-height: 155px;
+      position: relative;
+      overflow: hidden;
+      image-rendering: pixelated;
+    }
+
+    .stars {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, #dfe6ff 1px, transparent 1.5px),
+        radial-gradient(circle, #8498ff 1px, transparent 1.5px);
+      background-position: 10px 12px, 39px 35px;
+      background-size: 53px 47px, 71px 61px;
+      opacity: .22;
+    }
+
+    .game-screen {
+      background: #080f26;
+      border: 2px solid #334775;
+      box-shadow: inset 0 0 0 4px #0d1734, 6px 6px 0 #050919;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      touch-action: none;
+      image-rendering: pixelated;
+      cursor: crosshair;
+    }
+
+    .game-tab {
+      border: 1px solid #2b3a64;
+      background: #101a38;
+      color: #b7c4e7;
+      transition: all .2s;
+    }
+
+    .game-tab.active {
+      background: #8c9aff;
+      color: #080d24;
+      border-color: #b7c0ff;
+      font-weight: 800;
+    }
+
+    .pixel-dot {
+      width: 9px;
+      height: 9px;
+      background: var(--mint);
+      display: inline-block;
+      box-shadow: 0 0 12px #8cf5d2;
+    }
+
+    .game-message {
+      min-height: 25px;
+      color: var(--mint);
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+
+    .muted { color: var(--muted); }
+
+    @media (max-width: 640px) {
+      .pixel-font { letter-spacing: -1px; }
+      .game-art { min-height: 125px; }
+      .pixel-border { box-shadow: 3px 3px 0 #050919; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 border-b border-[#26365f] bg-[#080d24]/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <a href="#home" class="flex items-center gap-3" aria-label="PIXEL PLAY — на главную">
+        <span class="grid h-10 w-10 place-items-center border-2 border-[#8c9aff] bg-[#182448] text-xl">▣</span>
+        <span class="pixel-font text-xs sm:text-sm">PIXEL<span class="text-[#8cf5d2]">PLAY</span></span>
+      </a>
+
+      <nav class="hidden items-center gap-7 text-sm text-[#b7c4e7] md:flex">
+        <a href="#games" class="hover:text-white">Игры</a>
+        <a href="#arcade" class="hover:text-white">Аркада</a>
+        <a href="#about" class="hover:text-white">О проекте</a>
+      </nav>
+
+      <a href="#games" class="pixel-button px-3 py-2 text-xs font-extrabold sm:px-5 sm:py-3">
+        Играть <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section id="home" class="relative mx-auto max-w-7xl overflow-hidden px-4 pb-12 pt-16 sm:px-6 sm:pb-20 sm:pt-24">
+      <div class="pointer-events-none absolute right-0 top-10 select-none text-[180px] leading-none text-[#283766]/30 sm:text-[280px]" aria-hidden="true">✦</div>
+
+      <div class="relative z-10 grid items-center gap-12 lg:grid-cols-[1.2fr_.8fr]">
+        <div>
+          <div class="mb-6 inline-flex items-center gap-3 border border-[#34466f] bg-[#101a38] px-3 py-2 text-xs text-[#8cf5d2]">
+            <span class="pixel-dot"></span>
+            ТВОЯ МАЛЕНЬКАЯ ИГРОВАЯ ВСЕЛЕННАЯ
+          </div>
+
+          <h1 class="pixel-font max-w-3xl text-3xl leading-relaxed sm:text-4xl lg:text-5xl">
+            ИГРАЙ.<br>
+            <span class="text-[#8c9aff]">ОТДЫХАЙ.</span><br>
+            <span class="text-[#8cf5d2]">ПОВТОРЯЙ.</span>
+          </h1>
+
+          <p class="mt-7 max-w-xl text-base leading-8 text-[#b7c4e7] sm:text-lg">
+            Маленькие приключения, большие эмоции.
+            Выбирай игру, устраивайся поудобнее и наслаждайся
+            своим пиксельным миром.
+          </p>
+
+          <div class="mt-9 flex flex-wrap gap-4">
+            <a href="#games" class="pixel-button inline-flex items-center gap-3 px-6 py-4 text-sm font-extrabold">
+              <span>▶</span> ВЫБРАТЬ ИГРУ
+            </a>
+            <a href="#about" class="border-2 border-[#34466f] px-6 py-4 text-sm font-bold transition hover:border-[#8cf5d2]">
+              О ПРОЕКТЕ
+            </a>
+          </div>
+
+          <div class="mt-9 flex flex-wrap gap-5 text-xs text-[#9ba9cc]">
+            <span>▣ 3 мини-игры</span>
+            <span>▣ Без установки</span>
+            <span>▣ Прямо в браузере</span>
+          </div>
+        </div>
+
+        <!-- Pixel decoration made with HTML/CSS, no external images -->
+        <div class="mx-auto w-full max-w-md">
+          <div class="pixel-border relative bg-[#101a38] p-5 sm:p-7">
+            <div class="mb-5 flex items-center justify-between border-b border-[#29385e] pb-4">
+              <span class="pixel-font text-[9px] text-[#8cf5d2]">PLAYER_001</span>
+              <span class="text-xs text-[#9ba9cc]">● ONLINE</span>
+            </div>
+
+            <div class="relative grid aspect-square place-items-center overflow-hidden border border-[#29385e] bg-[#0b1430]">
+              <div class="absolute inset-0 opacity-50" style="background-image:linear-gradient(#26365f 1px,transparent 1px),linear-gradient(90deg,#26365f 1px,transparent 1px);background-size:24px 24px"></div>
+              <div class="absolute left-5 top-5 text-2xl text-[#8c9aff]">✦</div>
+              <div class="absolute right-8 top-10 text-xl text-[#8cf5d2]">✧</div>
+              <div class="absolute bottom-10 left-8 text-xl text-[#8cf5d2]">✦</div>
+              <div class="absolute bottom-6 right-6 text-2xl text-[#8c9aff]">✧</div>
+
+              <div class="relative flex flex-col items-center">
+                <div class="mb-2 flex gap-2">
+                  <span class="h-3 w-3 bg-[#8cf5d2]"></span>
+                  <span class="h-3 w-3 bg-[#8cf5d2]"></span>
+                </div>
+                <div class="grid h-24 w-24 grid-cols-6 grid-rows-6 gap-1 border-4 border-[#a7b0ff] bg-[#7c8cff] p-2 shadow-[0_0_35px_#7c8cff55]">
+                  <span class="col-span-2 bg-[#101a38]"></span>
+                  <span class="col-span-2 col-start-5 bg-[#101a38]"></span>
+                  <span class="col-span-4 col-start-2 row-start-3 bg-[#101a38]"></span>
+                  <span class="col-span-2 col-start-3 row-start-4 bg-[#101a38]"></span>
+                  <span class="col-span-4 col-start-2 row-start-5 bg-[#101a38]"></span>
+                </div>
+                <div class="mt-4 h-3 w-28 bg-[#8c9aff]"></div>
+                <div class="mt-2 h-2 w-16 bg-[#34466f]"></div>
+              </div>
+            </div>
+
+            <div class="mt-5 flex items-center justify-between gap-3 text-xs">
+              <span class="text-[#b7c4e7]">ТВОЁ ПРИКЛЮЧЕНИЕ НАЧИНАЕТСЯ</span>
+              <span class="pixel-font text-[9px] text-[#8cf5d2]">NOW!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME SELECTOR -->
+    <section id="games" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p class="mb-3 text-xs font-bold uppercase tracking-[.25em] text-[#8cf5d2]">01 / GAME LIBRARY</p>
+          <h2 class="pixel-font text-lg leading-loose sm:text-xl">ВЫБИРАЙ СВОЮ ИГРУ</h2>
+          <p class="mt-3 text-sm text-[#9ba9cc]">Три разных настроения — одно место для отдыха.</p>
+        </div>
+        <span class="w-fit border border-[#34466f] px-3 py-2 text-xs text-[#b7c4e7]">3 ИГРЫ ДОСТУПНО</span>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-3">
+        <!-- Scary Maze -->
+        <article class="game-card selected" data-card="maze">
+          <div class="game-art bg-[#101b39]">
+            <div class="stars"></div>
+            <div class="relative flex h-24 w-40 items-center justify-center border-2 border-[#7c8cff]">
+              <div class="absolute left-0 top-0 h-7 w-3/4 border-b-2 border-r-2 border-[#7c8cff]"></div>
+              <div class="absolute bottom-0 right-0 h-7 w-3/4 border-l-2 border-t-2 border-[#7c8cff]"></div>
+              <div class="absolute left-3 top-9 h-2 w-9 bg-[#8cf5d2]"></div>
+              <div class="absolute right-3 top-9 h-2 w-5 bg-[#8cf5d2]"></div>
+              <span class="relative z-10 text-3xl text-[#8cf5d2]">◎</span>
+            </div>
+            <span class="absolute right-4 top-4 border border-[#34466f] bg-[#080d24] px-2 py-1 text-[10px] text-[#8cf5d2]">01</span>
+          </div>
+          <div class="p-5">
+            <div class="mb-2 flex items-center justify-between gap-2">
+              <h3 class="font-extrabold">Scary Maze Game</h3>
+              <span class="text-xs text-[#8cf5d2]">◈</span>
+            </div>
+            <p class="min-h-[48px] text-sm leading-6 text-[#9ba9cc]">Проверь свою точность. Главное — не задеть стены!</p>
+            <button data-play="maze" class="pixel-button mt-5 w-full px-4 py-3 text-xs font-extrabold">ИГРАТЬ →</button>
+          </div>
+        </article>
+
+        <!-- Geometry Dash -->
+        <article class="game-card" data-card="dash">
+          <div class="game-art bg-[#15183b]">
+            <div class="stars"></div>
+            <div class="absolute bottom-8 left-0 right-0 h-1 bg-[#8cf5d2]"></div>
+            <div class="relative h-12 w-12 rotate-0 border-4 border-[#8cf5d2] bg-[#7c8cff] shadow-[0_0_20px_#7c8cff77]">
+              <span class="absolute left-2 top-2 h-2 w-2 bg-[#080d24]"></span>
+              <span class="absolute right-2 top-2 h-2 w-2 bg-[#080d24]"></span>
+            </div>
+            <div class="absolute bottom-9 right-10 h-8 w-8 border-2 border-[#ff8bc1] bg-[#ff8bc1]/20" style="clip-path:polygon(50% 0,100% 100%,0 100%)"></div>
+            <div class="absolute bottom-9 right-24 h-5 w-5 border-2 border-[#ff8bc1] bg-[#ff8bc1]/20" style="clip-path:polygon(50% 0,100% 100%,0 100%)"></div>
+            <span class="absolute right-4 top-4 border border-[#34466f] bg-[#080d24] px-2 py-1 text-[10px] text-[#8cf5d2]">02</span>
+          </div>
+          <div class="p-5">
+            <div class="mb-2 flex items-center justify-between gap-2">
+              <h3 class="font-extrabold">Geometry Dash</h3>
+              <span class="text-xs text-[#ff8bc1]">▲</span>
+            </div>
+            <p class="min-h-[48px] text-sm leading-6 text-[#9ba9cc]">Ритм, прыжки и препятствия. Сможешь продержаться?</p>
+            <button data-play="dash" class="pixel-button mt-5 w-full px-4 py-3 text-xs font-extrabold">ИГРАТЬ →</button>
+          </div>
+        </article>
+
+        <!-- Angry Birds -->
+        <article class="game-card" data-card="birds">
+          <div class="game-art bg-[#14203a]">
+            <div class="stars"></div>
+            <div class="absolute bottom-8 left-0 right-0 h-2 bg-[#8cf5d2]/70"></div>
+            <div class="absolute bottom-10 left-12 h-14 w-2 bg-[#bda07d]"></div>
+            <div class="absolute bottom-10 left-8 h-10 w-10 rounded-full border-4 border-[#ff8b78] bg-[#ff685d] shadow-[0_0_20px_#ff685d55]">
+              <span class="absolute left-2 top-2 h-2 w-2 bg-white"></span>
+              <span class="absolute right-2 top-2 h-2 w-2 bg-white"></span>
+              <span class="absolute left-3 top-6 h-1 w-4 bg-[#101a38]"></span>
+            </div>
+            <div class="absolute bottom-10 right-12 grid h-14 w-12 grid-cols-2 gap-1">
+              <span class="border-2 border-[#8cf5d2] bg-[#8cf5d2]/20"></span>
+              <span class="border-2 border-[#8cf5d2] bg-[#8cf5d2]/20"></span>
+              <span class="col-span-2 border-2 border-[#8cf5d2] bg-[#8cf5d2]/20"></span>
+            </div>
+            <span class="absolute right-4 top-4 border border-[#34466f] bg-[#080d24] px-2 py-1 text-[10px] text-[#8cf5d2]">03</span>
+          </div>
+          <div class="p-5">
+            <div class="mb-2 flex items-center justify-between gap-2">
+              <h3 class="font-extrabold">Angry Birds</h3>
+              <span class="text-xs text-[#ff8b78]">●</span>
+            </div>
+            <p class="min-h-[48px] text-sm leading-6 text-[#9ba9cc]">Натяни рогатку, прицелься и разрушь башню!</p>
+            <button data-play="birds" class="pixel-button mt-5 w-full px-4 py-3 text-xs font-extrabold">ИГРАТЬ →</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ARCADE -->
+    <section id="arcade" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <div class="mb-8">
+        <p class="mb-3 text-xs font-bold uppercase tracking-[.25em] text-[#8cf5d2]">02 / NOW PLAYING</p>
+        <h2 class="pixel-font text-lg leading-loose sm:text-xl">ИГРОВАЯ ЗОНА</h2>
+        <p class="mt-3 text-sm text-[#9ba9cc]">Переключай игры, не покидая страницу.</p>
+      </div>
+
+      <div class="pixel-border bg-[#101a38] p-3 sm:p-6 lg:p-8">
+        <!-- Quick switch -->
+        <div class="mb-6 flex flex-wrap gap-2" role="group" aria-label="Выбрать игру">
+          <button class="game-tab active flex-1 px-3 py-3 text-xs sm:flex-none sm:px-5" data-tab="maze">01 · MAZE</button>
+          <button class="game-tab flex-1 px-3 py-3 text-xs sm:flex-none sm:px-5" data-tab="dash">02 · DASH</button>
+          <button class="game-tab flex-1 px-3 py-3 text-xs sm:flex-none sm:px-5" data-tab="birds">03 · BIRDS</button>
+        </div>
+
+        <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 id="currentTitle" class="pixel-font text-xs leading-loose text-[#8cf5d2] sm:text-sm">SCARY MAZE GAME</h3>
+            <p id="currentDescription" class="mt-2 max-w-xl text-sm leading-6 text-[#9ba9cc]">Проведи курсор через лабиринт, не касаясь стен.</p>
+          </div>
+          <div class="border border-[#34466f] bg-[#080d24] px-4 py-3">
+            <div class="text-[10px] text-[#9ba9cc]">ТВОЙ СЧЁТ</div>
+            <div id="score" class="pixel-font mt-2 text-sm text-white">000</div>
+          </div>
+        </div>
+
+        <div class="game-screen relative">
+          <canvas id="gameCanvas" width="800" height="420" aria-label="Игровое поле" role="img"></canvas>
+        </div>
+
+        <div class="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <p id="gameMessage" class="game-message" aria-live="polite">Нажми «Начать игру», чтобы начать.</p>
+          <div class="flex flex-wrap gap-3">
+            <button id="startBtn" class="pixel-button px-5 py-3 text-xs font-extrabold">▶ НАЧАТЬ ИГРУ</button>
+            <button id="restartBtn" class="border-2 border-[#34466f] px-5 py-3 text-xs font-bold transition hover:border-[#8cf5d2]">↻ ЗАНОВО</button>
+          </div>
+        </div>
+
+        <div class="mt-5 border-t border-[#29385e] pt-5">
+          <p class="mb-2 text-xs font-bold text-[#b7c4e7]">КАК ИГРАТЬ</p>
+          <p id="controlsText" class="text-sm leading-7 text-[#9ba9cc]">Проведи мышью или пальцем от зелёной точки к финишу. Не касайся синих стен.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <div class="grid gap-5 md:grid-cols-3">
+        <div class="pixel-border bg-[#101a38] p-6">
+          <div class="mb-5 text-3xl text-[#8cf5d2]">▦</div>
+          <h3 class="mb-3 font-extrabold">Всё в одном месте</h3>
+          <p class="text-sm leading-7 text-[#9ba9cc]">Не нужно открывать десятки вкладок. Все три мини-игры доступны на одной странице.</p>
+        </div>
+        <div class="pixel-border bg-[#101a38] p-6">
+          <div class="mb-5 text-3xl text-[#8c9aff]">⌁</div>
+          <h3 class="mb-3 font-extrabold">Просто и удобно</h3>
+          <p class="text-sm leading-7 text-[#9ba9cc]">Минималистичный интерфейс, понятное управление и быстрый перезапуск.</p>
+        </div>
+        <div class="pixel-border bg-[#101a38] p-6">
+          <div class="mb-5 text-3xl text-[#ff8bc1]">♥</div>
+          <h3 class="mb-3 font-extrabold">Немного отдыха</h3>
+          <p class="text-sm leading-7 text-[#9ba9cc]">Небольшие игровые паузы, пиксельная эстетика и уютная атмосфера.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <div class="pixel-border relative overflow-hidden bg-[#101a38] p-7 sm:p-12">
+        <div class="absolute -right-10 -top-10 text-[180px] text-[#263766]/40" aria-hidden="true">✦</div>
+        <div class="relative max-w-2xl">
+          <p class="mb-4 text-xs font-bold uppercase tracking-[.25em] text-[#8cf5d2]">03 / ABOUT US</p>
+          <h2 class="pixel-font text-base leading-loose sm:text-xl">НЕ СПЕШИ. ПРОСТО ИГРАЙ.</h2>
+          <p class="mt-5 text-sm leading-8 text-[#b7c4e7]">
+            PIXEL PLAY — небольшая игровая вселенная для тех, кто хочет отвлечься,
+            проверить реакцию или просто провести пару приятных минут.
+            Выбирай настроение и отправляйся навстречу приключениям.
+          </p>
+          <a href="#games" class="pixel-button mt-7 inline-block px-6 py-4 text-xs font-extrabold">ВЫБРАТЬ ПРИКЛЮЧЕНИЕ →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-[#26365f] px-4 py-8 text-center">
+    <a href="#home" class="pixel-font text-xs">PIXEL<span class="text-[#8cf5d2]">PLAY</span></a>
+    <p class="mt-4 text-xs leading-6 text-[#7786ad]">Маленькие игры. Большое удовольствие.</p>
+    <p class="mt-2 text-[10px] text-[#59698f]">© 2026 PIXEL PLAY · Фан-проект с мини-играми</p>
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const scoreEl = document.getElementById("score");
+      const messageEl = document.getElementById("gameMessage");
+      const titleEl = document.getElementById("currentTitle");
+      const descriptionEl = document.getElementById("currentDescription");
+      const controlsEl = document.getElementById("controlsText");
+      const startBtn = document.getElementById("startBtn");
+      const restartBtn = document.getElementById("restartBtn");
+
+      const W = canvas.width;
+      const H = canvas.height;
+
+      const colors = {
+        bg: "#080f26",
+        grid: "#172448",
+        blue: "#7c8cff",
+        mint: "#8cf5d2",
+        white: "#f2f5ff",
+        muted: "#9ba9cc",
+        pink: "#ff8bc1",
+        red: "#ff685d",
+        green: "#72e6a2"
+      };
+
+      const games = {
+        maze: {
+          title: "SCARY MAZE GAME",
+          description: "Проведи курсор через лабиринт, не касаясь стен.",
+          controls: "Проведи мышью или пальцем от зелёной точки к финишу. Не касайся синих стен."
+        },
+        dash: {
+          title: "GEOMETRY DASH",
+          description: "Прыгай через шипы и продержись как можно дольше.",
+          controls: "Нажимай пробел, ↑, W или кликай по игровому полю, чтобы прыгнуть. На телефоне можно нажимать на поле."
+        },
+        birds: {
+          title: "ANGRY BIRDS",
+          description: "Оттяни птицу назад и отпусти, чтобы сбить башню.",
+          controls: "Зажми птицу мышью или пальцем, оттяни назад и отпусти. Сбивай блоки и набирай очки."
+        }
+      };
+
+      let activeGame = "maze";
+      let score = 0;
+      let running = false;
+      let lastTime = 0;
+      let elapsed = 0;
+      let pointer = { x: 0, y: 0, down: false };
+      let best = { maze: 0, dash: 0, birds: 0 };
+
+      const maze = {
+        player: { x: 65, y: 350, r: 7 },
+        goal: { x: 744, y: 65, r: 13 },
+        walls: [
+          [0, 0, 800, 14], [0, 406, 800, 14],
+          [0, 0, 14, 420], [786, 0, 14, 420],
+          [120, 14, 14, 270],
+          [120, 284, 190, 14],
+          [296, 130, 14, 168],
+          [200, 130, 110, 14],
+          [200, 130, 14, 90],
+          [200, 206, 230, 14],
+          [416, 206, 14, 118],
+          [416, 310, 150, 14],
+          [552, 100, 14, 224],
+          [430, 100, 136, 14],
+          [430, 100, 14, 50],
+          [430, 136, 100, 14],
+          [516, 136, 14, 78],
+          [630, 14, 14, 170],
+          [630, 170, 90, 14],
+          [706, 170, 14, 125],
+          [630, 281, 90, 14],
+          [630, 281, 14, 76],
+          [630, 343, 90, 14]
+        ],
+        trail: [],
+        won: false,
+        failed: false
+      };
+
+      const dash = {
+        player: { x: 100, y: 340, size: 28, vy: 0, grounded: true, rotation: 0 },
+        obstacles: [],
+        distance: 0,
+        speed: 250,
+        spawnIn: 1.2,
+        dead: false,
+        jumps: 0
+      };
+
+      const birds = {
+        sling: { x: 145, y: 290 },
+        bird: { x: 145, y: 290, r: 15, vx: 0, vy: 0 },
+        blocks: [],
+        dragging: false,
+        flying: false,
+        shots: 0,
+        destroyed: 0,
+        settled: false
+      };
+
+      function setMessage(text) {
+        messageEl.textContent = text;
+      }
+
+      function setScore(value) {
+        score = Math.max(0, Math.floor(value));
+        scoreEl.textContent = String(score).padStart(3, "0");
+        best[activeGame] = Math.max(best[activeGame] || 0, score);
+      }
+
+      function drawBackground() {
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.strokeStyle = colors.grid;
+        ctx.lineWidth = 1;
+
+        for (let x = 0; x < W; x += 32) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y < H; y += 32) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+
+        // Pixel stars
+        for (let i = 0; i < 24; i++) {
+          const x = (i * 137 + 29) % W;
+          const y = (i * 71 + 19) % H;
+          ctx.fillStyle = i % 3 === 0 ? colors.mint : "#52659b";
+          ctx.fillRect(x, y, 3, 3);
+        }
+      }
+
+      function drawText(text, x, y, size = 14, color = colors.white, align = "left") {
+        ctx.fillStyle = color;
+        ctx.font = `bold ${size}px monospace`;
+        ctx.textAlign = align;
+        ctx.fillText(text, x, y);
+        ctx.textAlign = "left";
+      }
+
+      function resetMaze() {
+        maze.player = { x: 65, y: 350, r: 7 };
+        maze.trail = [];
+        maze.won = false;
+        maze.failed = false;
+        pointer.down = false;
+      }
+
+      function resetDash() {
+        dash.player = {
+          x: 100, y: 340, size: 28,
+          vy: 0, grounded: true, rotation: 0
+        };
+        dash.obstacles = [];
+        dash.distance = 0;
+        dash.speed = 250;
+        dash.spawnIn = 1.2;
+        dash.dead = false;
+        dash.jumps = 0;
+      }
+
+      function resetBirds() {
+        birds.sling = { x: 145, y: 290 };
+        birds.bird = {
+          x: 145, y: 290, r: 15, vx: 0, vy: 0
+        };
+        birds.blocks = [
+          { x: 540, y: 310, w: 22, h: 70, hp: 1 },
+          { x: 562, y: 310, w: 22, h: 70, hp: 1 },
+          { x: 540, y: 270, w: 44, h: 18, hp: 1 },
+          { x: 584, y: 310, w: 22, h: 70, hp: 1 },
+          { x: 606, y: 310, w: 22, h: 70, hp: 1 },
+          { x: 584, y: 270, w: 44, h: 18, hp: 1 },
+          { x: 562, y: 230, w: 44, h: 18, hp: 1 },
+          { x: 650, y: 342, w: 24, h: 38, hp: 1 }
+        ];
+        birds.dragging = false;
+        birds.flying = false;
+        birds.shots = 0;
+        birds.destroyed = 0;
+        birds.settled = false;
+      }
+
+      function prepareGame(id) {
+        activeGame = id;
+        running = false;
+        elapsed = 0;
+        lastTime = 0;
+
+        document.querySelectorAll("[data-tab]").forEach(button => {
+          button.classList.toggle("active", button.dataset.tab === id);
+          button.setAttribute("aria-pressed", button.dataset.tab === id ? "true" : "false");
+        });
+
+        document.querySelectorAll("[data-card]").forEach(card => {
+          card.classList.toggle("selected", card.dataset.card === id);
+        });
+
+        titleEl.textContent = games[id].title;
+        descriptionEl.textContent = games[id].description;
+        controlsEl.textContent = games[id].controls;
+        startBtn.textContent = "▶ НАЧАТЬ ИГРУ";
+
+        if (id === "maze") resetMaze();
+        if (id === "dash") resetDash();
+        if (id === "birds") resetBirds();
+
+        setScore(0);
+        setMessage("Нажми «Начать игру», чтобы начать.");
+        render();
+      }
+
+      function startGame() {
+        if (activeGame === "maze") {
+          resetMaze();
+          running = true;
+          setMessage("Веди курсор аккуратно к зелёному финишу!");
+        } else if (activeGame === "dash") {
+          resetDash();
+          running = true;
+          setMessage("Прыгай через препятствия!");
+        } else {
+          resetBirds();
+          running = true;
+          setMessage("Оттяни птицу назад и отпусти!");
+        }
+
+        elapsed = 0;
+        lastTime = 0;
+        startBtn.textContent = "▶ ИГРА ИДЁТ";
+        render();
+      }
+
+      function endGame(message) {
+        running = false;
+        startBtn.textContent = "▶ ИГРАТЬ СНОВА";
+        setMessage(message);
+      }
+
+      function circleRect(cx, cy, r, rect) {
+        const x = Math.max(rect[0], Math.min(cx, rect[0] + rect[2]));
+        const y = Math.max(rect[1], Math.min(cy, rect[1] + rect[3]));
+        const dx = cx - x;
+        const dy = cy - y;
+        return dx * dx + dy * dy < r * r;
+      }
+
+      // SCARY MAZE
+      function drawMaze() {
+        drawBackground();
+
+        // Exit
+        ctx.fillStyle = "#163c3b";
+        ctx.fillRect(700, 24, 66, 66);
+        ctx.strokeStyle = colors.mint;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(700, 24, 66, 66);
+        drawText("EXIT", 733, 59, 13, colors.mint, "center");
+
+        // Start
+        ctx.fillStyle = "#183c35";
+        ctx.fillRect(25, 310, 78, 68);
+        drawText("START", 64, 335, 10, colors.mint, "center");
+
+        // Walls
+        for (const wall of maze.walls) {
+          ctx.fillStyle = "#263a72";
+          ctx.fillRect(...wall);
+          ctx.strokeStyle = colors.blue;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(...wall);
+        }
+
+        // Trail
+        if (maze.trail.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(maze.trail[0].x, maze.trail[0].y);
+          for (const p of maze.trail.slice(1)) ctx.lineTo(p.x, p.y);
+          ctx.strokeStyle = colors.mint;
+          ctx.lineWidth = 3;
+          ctx.globalAlpha = .55;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
+        // Player
+        ctx.fillStyle = colors.mint;
+        ctx.fillRect(maze.player.x - 5, maze.player.y - 5, 10, 10);
+        ctx.strokeStyle = "#e2fff6";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(maze.player.x - 5, maze.player.y - 5, 10, 10);
+
+        if (!running && !maze.won && !maze.failed) {
+          ctx.fillStyle = "rgba(8,15,38,.78)";
+          ctx.fillRect(180, 155, 440, 90);
+          drawText("SCARY MAZE", 400, 190, 21, colors.mint, "center");
+          drawText("FOLLOW THE PATH", 400, 218, 12, colors.white, "center");
+        }
+
+        if (maze.won || maze.failed) {
+          ctx.fillStyle = "rgba(8,15,38,.83)";
+          ctx.fillRect(140, 155, 520, 95);
+          drawText(maze.won ? "YOU DID IT!" : "OOPS! WALL HIT!", 400, 196, 22,
+            maze.won ? colors.mint : colors.red, "center");
+          drawText(maze.won ? "MAZE COMPLETE" : "TRY AGAIN", 400, 224, 13, colors.white, "center");
+        }
+      }
+
+      function moveMaze(x, y) {
+        if (!running || activeGame !== "maze" || maze.won || maze.failed) return;
+
+        const p = maze.player;
+        p.x = x;
+        p.y = y;
+        maze.trail.push({ x, y });
+        if (maze.trail.length > 250) maze.trail.shift();
+
+        for (const wall of maze.walls) {
+          if (circleRect(x, y, p.r, wall)) {
+            maze.failed = true;
+            setScore(0);
+            endGame("Ты коснулся стены. Попробуй ещё раз!");
+            render();
+            return;
+          }
+        }
+
+        const dx = x - maze.goal.x;
+        const dy = y - maze.goal.y;
+
+        if (Math.hypot(dx, dy) < 28) {
+          maze.won = true;
+          setScore(100);
+          endGame("Отлично! Лабиринт пройден!");
+        }
+
+        render();
+      }
+
+      // GEOMETRY DASH
+      function jump() {
+        if (activeGame !== "dash" || !running || dash.dead) return;
+        if (dash.player.grounded) {
+          dash.player.vy = -440;
+          dash.player.grounded = false;
+          dash.jumps++;
+        }
+      }
+
+      function updateDash(dt) {
+        const p = dash.player;
+        const floor = 354;
+
+        dash.distance += dash.speed * dt;
+        dash.speed = Math.min(390, 250 + dash.distance * .025);
+        p.vy += 1100 * dt;
+        p.y += p.vy * dt;
+
+        if (p.y >= floor - p.size) {
+          p.y = floor - p.size;
+          p.vy = 0;
+          p.grounded = true;
+          p.rotation = 0;
+        } else {
+          p.grounded = false;
+          p.rotation += dt * 5;
+        }
+
+        dash.spawnIn -= dt;
+        if (dash.spawnIn <= 0) {
+          const size = 25 + Math.random() * 12;
+          dash.obstacles.push({
+            x: W + 10,
+            size,
+            counted: false
+          });
+          dash.spawnIn = .85 + Math.random() * .75;
+        }
+
+        for (const ob of dash.obstacles) {
+          ob.x -= dash.speed * dt;
+
+          const px = p.x + p.size / 2;
+          const py = p.y + p.size / 2;
+          const ox = ob.x + ob.size / 2;
+          const oy = floor - ob.size / 2;
+
+          // Triangle collision approximation
+          if (Math.abs(px - ox) < (p.size + ob.size * .65) / 2 &&
+              Math.abs(py - oy) < (p.size + ob.size * .8) / 2) {
+            dash.dead = true;
+            endGame("Столкновение! Попробуй ещё раз.");
+          }
+
+          if (!ob.counted && ob.x + ob.size < p.x) {
+            ob.counted = true;
+            setScore(score + 10);
+          }
+        }
+
+        dash.obstacles = dash.obstacles.filter(ob => ob.x > -60);
+
+        if (running) setScore(Math.max(score, Math.floor(dash.distance / 18)));
+      }
+
+      function drawDash() {
+        drawBackground();
+
+        const floor = 354;
+        ctx.fillStyle = "#142344";
+        ctx.fillRect(0, floor, W, H - floor);
+        ctx.fillStyle = colors.mint;
+        ctx.fillRect(0, floor, W, 4);
+
+        // Floor tiles
+        for (let x = 0; x < W; x += 32) {
+          ctx.strokeStyle = "#263a72";
+          ctx.strokeRect(x, floor + 6, 32, 32);
+        }
+
+        for (const ob of dash.obstacles) {
+          ctx.fillStyle = colors.pink;
+          ctx.beginPath();
+          ctx.moveTo(ob.x, floor);
+          ctx.lineTo(ob.x + ob.size / 2, floor - ob.size);
+          ctx.lineTo(ob.x + ob.size, floor);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#ffd0e5";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const p = dash.player;
+        ctx.save();
+        ctx.translate(p.x + p.size / 2, p.y + p.size / 2);
+        ctx.rotate(p.rotation);
+
+        ctx.fillStyle = colors.blue;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.strokeStyle = colors.mint;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(-7, -6, 5, 5);
+        ctx.fillRect(3, -6, 5, 5);
+        ctx.fillRect(-4, 5, 10, 3);
+        ctx.restore();
+
+        drawText("DISTANCE: " + Math.floor(dash.distance), 20, 30, 13, colors.mint);
+
+        if (!running && !dash.dead) {
+          ctx.fillStyle = "rgba(8,15,38,.80)";
+          ctx.fillRect(150, 135, 500, 100);
+          drawText("GEOMETRY DASH", 400, 177, 20, colors.mint, "center");
+          drawText("PRESS SPACE TO JUMP", 400, 207, 12, colors.white, "center");
+        }
+
+        if (dash.dead) {
+          ctx.fillStyle = "rgba(8,15,38,.84)";
+          ctx.fillRect(150, 135, 500, 100);
+          drawText("GAME OVER", 400, 177, 23, colors.red, "center");
+          drawText("SCORE: " + score, 400, 207, 13, colors.white, "center");
+        }
+      }
+
+      // ANGRY BIRDS
+      function getCanvasPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: (event.clientX - rect.left) * W / rect.width,
+          y: (event.clientY - rect.top) * H / rect.height
+        };
+      }
+
+      function drawBird(x, y, r) {
+        ctx.fillStyle = colors.red;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffd0c7";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(x - 8, y - 5, 6, 7);
+        ctx.fillRect(x + 3, y - 5, 6, 7);
+        ctx.fillStyle = colors.bg;
+        ctx.fillRect(x - 6, y - 3, 3, 4);
+        ctx.fillRect(x + 5, y - 3, 3, 4);
+
+        ctx.fillStyle = "#ffc16d";
+        ctx.beginPath();
+        ctx.moveTo(x - 3, y + 2);
+        ctx.lineTo(x + 10, y + 4);
+        ctx.lineTo(x - 2, y + 8);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawBirds() {
+        drawBackground();
+
+        // Ground
+        ctx.fillStyle = "#183a3a";
+        ctx.fillRect(0, 380, W, 40);
+        ctx.fillStyle = colors.mint;
+        ctx.fillRect(0, 380, W, 3);
+
+        // Sling
+        ctx.strokeStyle = "#c39b76";
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(birds.sling.x - 10, 380);
+        ctx.lineTo(birds.sling.x - 4, birds.sling.y - 2);
+        ctx.moveTo(birds.sling.x + 12, 380);
+        ctx.lineTo(birds.sling.x + 5, birds.sling.y - 2);
+        ctx.stroke();
+
+        // Elastic
+        if (birds.dragging) {
+          ctx.strokeStyle = "#8f6c54";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(birds.sling.x - 4, birds.sling.y);
+          ctx.lineTo(birds.bird.x, birds.bird.y);
+          ctx.lineTo(birds.sling.x + 5, birds.sling.y);
+          ctx.stroke();
+        } else if (!birds.flying && !birds.settled) {
+          ctx.strokeStyle = "#8f6c54";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(birds.sling.x - 4, birds.sling.y);
+          ctx.lineTo(birds.sling.x + 5, birds.sling.y);
+          ctx.stroke();
+        }
+
+        // Blocks
+        for (const block of birds.blocks) {
+          if (block.hp <= 0) continue;
+          ctx.fillStyle = "#274f64";
+          ctx.fillRect(block.x, block.y, block.w, block.h);
+          ctx.strokeStyle = colors.mint;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(block.x, block.y, block.w, block.h);
+          ctx.fillStyle = "#8cf5d2";
+          ctx.fillRect(block.x + 5, block.y + 5, 4, 4);
+        }
+
+        // Trajectory guide while aiming
+        if (birds.dragging) {
+          const vx = (birds.sling.x - birds.bird.x) * 4.5;
+          const vy = (birds.sling.y - birds.bird.y) * 4.5;
+
+          for (let i = 1; i <= 8; i++) {
+            const t = i * .12;
+            const x = birds.bird.x + vx * t;
+            const y = birds.bird.y + vy * t + 240 * t * t;
+            ctx.fillStyle = colors.mint;
+            ctx.fillRect(x, y, 4, 4);
+          }
+        }
+
+        if (!birds.settled || !birds.flying) {
+          drawBird(birds.bird.x, birds.bird.y, birds.bird.r);
+        }
+
+        drawText("SHOTS: " + birds.shots, 20, 30, 13, colors.mint);
+        drawText("BLOCKS: " + birds.destroyed, 20, 51, 12, colors.white);
+
+        if (!running && !birds.flying && !birds.dragging) {
+          ctx.fillStyle = "rgba(8,15,38,.78)";
+          ctx.fillRect(170, 135, 460, 90);
+          drawText("ANGRY BIRDS", 400, 175, 21, colors.mint, "center");
+          drawText("PULL BACK & RELEASE", 400, 204, 12, colors.white, "center");
+        }
+
+        if (birds.settled) {
+          ctx.fillStyle = "rgba(8,15,38,.78)";
+          ctx.fillRect(170, 135, 460, 90);
+          drawText("ROUND COMPLETE", 400, 175, 20, colors.mint, "center");
+          drawText("SCORE: " + score, 400, 204, 13, colors.white, "center");
+        }
+      }
+
+      function updateBirds(dt) {
+        if (!birds.flying) return;
+
+        const b = birds.bird;
+        const oldX = b.x;
+        const oldY = b.y;
+
+        b.vy += 480 * dt;
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+
+        // Hit detection
+        for (const block of birds.blocks) {
+          if (block.hp <= 0) continue;
+
+          const hit = circleRect(b.x, b.y, b.r, [
+            block.x, block.y, block.w, block.h
+          ]);
+
+          if (hit) {
+            block.hp = 0;
+            birds.destroyed++;
+            setScore(score + 25);
+            b.vx *= .58;
+            b.vy = -Math.abs(b.vy) * .38;
+            break;
+          }
+        }
+
+        // Ground bounce / stop
+        if (b.y + b.r >= 380) {
+          b.y = 380 - b.r;
+          b.vy *= -.28;
+          b.vx *= .65;
+        }
+
+        if (b.x > W + 50 || b.x < -50 || b.y > H + 50 ||
+            (Math.abs(b.vx) < 12 && Math.abs(b.vy) < 20 &&
+             (oldX !== b.x || oldY !== b.y))) {
+          birds.flying = false;
+          birds.settled = true;
+          b.x = birds.sling.x;
+          b.y = birds.sling.y;
+
+          if (birds.blocks.every(block => block.hp <= 0)) {
+            setScore(score + 100);
+            setMessage("Башня полностью разрушена! Отличный выстрел!");
+          } else {
+            setMessage("Выстрел завершён. Нажми «Заново» для нового раунда.");
+          }
+          endGame(messageEl.textContent);
+        }
+      }
+
+      function render() {
+        if (activeGame === "maze") drawMaze();
+        if (activeGame === "dash") drawDash();
+        if (activeGame === "birds") drawBirds();
+      }
+
+      function frame(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+        const dt = Math.min((timestamp - lastTime) / 1000, .035);
+        lastTime = timestamp;
+
+        if (running) {
+          elapsed += dt;
+          if (activeGame === "dash") updateDash(dt);
+          if (activeGame === "birds") updateBirds(dt);
+        }
+
+        render();
+        requestAnimationFrame(frame);
+      }
+
+      // Interface controls
+      document.querySelectorAll("[data-play]").forEach(button => {
+        button.addEventListener("click", () => {
+          prepareGame(button.dataset.play);
+          document.getElementById("arcade").scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      document.querySelectorAll("[data-tab]").forEach(button => {
+        button.addEventListener("click", () => {
+          prepareGame(button.dataset.tab);
+        });
+      });
+
+      startBtn.addEventListener("click", startGame);
+
+      restartBtn.addEventListener("click", () => {
+        startGame();
+      });
+
+      // Maze pointer movement
+      canvas.addEventListener("pointermove", event => {
+        const p = getCanvasPoint(event);
+        pointer.x = p.x;
+        pointer.y = p.y;
+
+        if (activeGame === "maze" && running && pointer.down) {
+          moveMaze(p.x, p.y);
+        }
+
+        if (activeGame === "birds" && birds.dragging && running) {
+          const dx = p.x - birds.sling.x;
+          const dy = p.y - birds.sling.y;
+          const distance = Math.hypot(dx, dy);
+          const maxPull = 75;
+          const scale = distance > maxPull ? maxPull / distance : 1;
+
+          birds.bird.x = birds.sling.x + dx * scale;
+          birds.bird.y = birds.sling.y + dy * scale;
+          render();
+        }
+      });
+
+      canvas.addEventListener("pointerdown", event => {
+        const p = getCanvasPoint(event);
+        pointer.down = true;
+
+        if (activeGame === "maze" && running) {
+          moveMaze(p.x, p.y);
+        }
+
+        if (activeGame === "dash" && running) {
+          jump();
+        }
+
+        if (activeGame === "birds" && running && !birds.flying && !birds.settled) {
+          const dx = p.x - birds.bird.x;
+          const dy = p.y - birds.bird.y;
+          if (Math.hypot(dx, dy) < 35) {
+            birds.dragging = true;
+            try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+          }
+        }
+      });
+
+      canvas.addEventListener("pointerup", event => {
+        pointer.down = false;
+
+        if (activeGame === "birds" && birds.dragging) {
+          birds.dragging = false;
+
+          const dx = birds.sling.x - birds.bird.x;
+          const dy = birds.sling.y - birds.bird.y;
+          const pull = Math.hypot(dx, dy);
+
+          if (pull > 5) {
+            birds.bird.vx = dx * 4.5;
+            birds.bird.vy = dy * 4.5;
+            birds.flying = true;
+            birds.shots++;
+            setMessage("Птица в полёте! Сбивай блоки!");
+          } else {
+            birds.bird.x = birds.sling.x;
+            birds.bird.y = birds.sling.y;
+          }
+          render();
+        }
+      });
+
+      canvas.addEventListener("pointercancel", () => {
+        pointer.down = false;
+        if (activeGame === "birds" && birds.dragging) {
+          birds.dragging = false;
+          birds.bird.x = birds.sling.x;
+          birds.bird.y = birds.sling.y;
+        }
+      });
+
+      // Keyboard controls
+      document.addEventListener("keydown", event => {
+        if (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW") {
+          if (activeGame === "dash") {
+            event.preventDefault();
+            jump();
+          }
+        }
+
+        if (event.code === "Escape") {
+          running = false;
+          setMessage("Игра приостановлена. Нажми «Начать игру», чтобы продолжить с начала.");
+          startBtn.textContent = "▶ ПРОДОЛЖИТЬ / СНАЧАЛА";
+        }
+      });
+
+      // Initial state
+      prepareGame("maze");
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
